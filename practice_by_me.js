@@ -1,4 +1,4 @@
-const { Sequelize, DataTypes } = require('sequelize');
+const { Sequelize, DataTypes, Op } = require('sequelize');
 const sequelize = new Sequelize(
     'learning-sequelize',
     'root',
@@ -12,7 +12,7 @@ const sequelize = new Sequelize(
     }
 );
 
-const student = sequelize.define(
+const Student = sequelize.define(
     'student',
     {
         student_id: {
@@ -47,7 +47,7 @@ const student = sequelize.define(
 
 const interactionWithDb = async () => {
     try {
-        await student.sync({ alter: true });
+        await Student.sync({ alter: true });
 
         // const asifInfo = await student.create({
         //     name: 'Asif',
@@ -56,44 +56,71 @@ const interactionWithDb = async () => {
         //     subscribed_to_wittcode: false
         // });
 
-        const allStudent = await student.bulkCreate([
-            {
-                name: 'Arafat',
-                favorite_class: 'Physics',
-                school_year: 2020,
-                subscribed_to_wittcode: false
-            },
-            {
-                name: 'Mahir',
-                favorite_class: 'Mathematics',
-                school_year: 2020,
-                subscribed_to_wittcode: false
-            },
-            {
-                name: 'Forkan',
-                favorite_class: 'Chemistry',
-                school_year: 2019,
-                subscribed_to_wittcode: false
-            },
-            {
-                name: 'Yeasin',
-                favorite_class: 'Mathematics',
-                school_year: 2019,
-                subscribed_to_wittcode: true
-            },
-            {
-                name: 'Asif',
-                favorite_class: 'Biology',
-                school_year: 2018,
-                subscribed_to_wittcode: true
-            },
-        ])
+        // const allStudent = await student.bulkCreate([
+        //     {
+        //         name: 'Arafat',
+        //         school_year: 2020,
+        //         subscribed_to_wittcode: false
+        //     },
+        //     // {
+        //     //     name: 'Mahir',
+        //     //     favorite_class: 'Mathematics',
+        //     //     school_year: 2020,
+        //     //     subscribed_to_wittcode: false
+        //     // },
+        //     // {
+        //     //     name: 'Forkan',
+        //     //     favorite_class: 'Chemistry',
+        //     //     school_year: 2019,
+        //     //     subscribed_to_wittcode: false
+        //     // },
+        //     // {
+        //     //     name: 'Yeasin',
+        //     //     favorite_class: 'Mathematics',
+        //     //     school_year: 2019,
+        //     //     subscribed_to_wittcode: true
+        //     // },
+        //     // {
+        //     //     name: 'Asif',
+        //     //     favorite_class: 'Biology',
+        //     //     school_year: 2018,
+        //     //     subscribed_to_wittcode: true
+        //     // },
+        // ], {validate: true})
 
 
         // console.log(asifInfo.toJSON());
-        allStudent.forEach(student => console.log(student.toJSON()));
+        // allStudent.forEach(student => console.log(student.toJSON()));
 
         console.log('Connection has been established successfully');
+
+        // const response = await Student.findAll({
+        //     where: {
+        //         [Op.or]: {
+        //             favorite_class: "Computer Science",
+        //             subscribed_to_wittcode: true
+        //         }
+        //     }
+        // });
+
+        // // console.log(response.toJSON());
+        // response.forEach((element) => {
+        //     console.log(element.toJSON(), "find all here");
+        // });
+
+        const response = await Student.findAll({
+            attributes: [
+                "school_year",
+                [sequelize.fn("COUNT", sequelize.col("school_year")), "numberOfSchoolYear"],
+            ],
+            group: "school_year"
+        });
+
+        response.forEach((element) => {
+            console.log(element.toJSON());
+        })
+
+
     } catch (error) {
         console.log('Unable to connect with Database!', error);
     }
