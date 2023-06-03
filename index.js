@@ -1,5 +1,7 @@
 const Sequelize = require('sequelize');
 const { DataTypes, Op } = Sequelize;
+const bcrypt = require('bcrypt');
+const zlib = require('zlib');
 
 const sequelize = new Sequelize('learning-sequelize', 'root', '', {
     dialect: 'mysql',
@@ -23,14 +25,37 @@ const User = sequelize.define('user', {
         allowNull: false,
         validate: {
             len: [4, 6]
-        }
+        },
+        // get() {
+        //     const rawValue = this.getDataValue('username');
+        //     return rawValue.toUpperCase();
+        // }
+        // set() {
+
+        // }
     },
     password: {
         type: DataTypes.STRING,
+        // set(value) {
+        //     const salt = bcrypt.genSaltSync(12);
+        //     const hash = bcrypt.hashSync(value, salt);
+        //     this.setDataValue('password', hash); 
+        // }
     },
     age: {
         type: DataTypes.INTEGER,
-        defaultValue: 21
+        defaultValue: 21,
+        // validate: {
+        //     // isOldEnough(value) {
+        //     //     if(value < 21) {
+        //     //         throw new Error("Too young!!!");
+        //     //     }
+        //     // }
+        //     // isNumeric: {
+        //     //     msg: "You must enter a number of age!"
+        //     // }
+        //     isNumeric: true
+        // }
     },
     wittCodeRocks: {
         type: DataTypes.BOOLEAN,
@@ -39,10 +64,55 @@ const User = sequelize.define('user', {
     mobile_number: {
         type: DataTypes.STRING,
         allowNull: true,
+    },
+    description: {
+        type: DataTypes.STRING,
+        // set(value) {
+        //     const compressed = zlib.deflateSync(value).toString('base64');
+        //     this.setDataValue('description', compressed);
+        // },
+        // get() {
+        //     const value = this.getDataValue('description');
+        //     const uncompressed = zlib.inflateSync(Buffer.from(value, 'base64'));
+        //     return uncompressed.toString();
+        // }
+    },
+    aboutUser: {
+        type: DataTypes.VIRTUAL,
+        get() {
+            return `${this.username} ${this.description}`;
+        }
+    },
+    email: {
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: true,
+        validate: {
+            myEmailValidator(value) {
+                if(value === null) {
+                    throw new Error("Please enter an email!!!");
+                }
+            }
+            // isEmail: true
+            // isIn: {
+            //     args: [['yeasin@gmail.com', 'arafat@gamil.com']],
+            //     msg: "The provided email must be one of the following!!!"
+            // }
+        }
     }
 }, {
     freezeTableName: true,
-    timestamps: false
+    timestamps: false,
+    validate: {
+        usernamePassMatch() {
+            if(this.username === this.password) {
+                throw new Error("Password cat not be your username!")
+            }
+            else {
+                console.log("Yeasin");
+            }
+        }
+    }
 });
 
 User.sync({ alter: true })
@@ -111,18 +181,61 @@ User.sync({ alter: true })
         //     },
         // ])
         // return User.max('age');
-        return User.sum('age', {
-            where: {
-                age: 21
-            }
+        // return User.sum('age', {
+        //     where: {
+        //         age: 21
+        //     }
+        // });
+        // return User.findAll({
+        //     where: {
+        //         age: 25
+        //     },
+        //     raw: true
+        // });
+        // return User.findOne({
+        //     where: {
+        //         age: {
+        //             [Op.or]: {
+        //                 [Op.lt]: 27,
+        //                 [Op.eq]: null
+        //             }
+        //         }
+        //     }
+        // });
+        // return User.findOrCreate({
+        //     where: { username: "Rihab" },
+        //     defaults: {
+        //         age: 56
+        //     }
+        // })
+        // return User.findAndCountAll({
+        //     where: { username: "Yeasin" },
+        //     raw: true
+        // })
+        // return User.findOne();
+        return User.create({
+            username: "Hridoy",
+            password: "Hridoy",
+            age: 23
         });
+        // return User.findOne({where: {username: "Hridoy"}})
+        // const user = User.build({email: 'tom'});
+        // return user.validate();
     })
     .then((data) => {
         // data.forEach(element => {
         //     console.log(element.toJSON());
         // });
-        console.log(data);
-    })
+        // const [result, created] = data;
+        // console.log(created);
+        // const { count, rows } = data;
+        // console.log(count);
+        // console.log(rows);
+        // console.log(data.username);
+        // console.log(data.password);
+        // console.log(data.description);
+        console.log(data.toJSON());
+        })
     .catch((err) => {
         console.log(err);
     });
