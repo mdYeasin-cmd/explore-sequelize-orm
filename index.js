@@ -89,7 +89,7 @@ const User = sequelize.define('user', {
         allowNull: true,
         validate: {
             myEmailValidator(value) {
-                if(value === null) {
+                if (value === null) {
                     throw new Error("Please enter an email!!!");
                 }
             }
@@ -102,18 +102,24 @@ const User = sequelize.define('user', {
     }
 }, {
     freezeTableName: true,
-    timestamps: false,
+    timestamps: true,
     validate: {
         usernamePassMatch() {
-            if(this.username === this.password) {
+            if (this.username === this.password) {
                 throw new Error("Password cat not be your username!")
             }
             else {
                 console.log("Yeasin");
             }
         }
-    }
+    },
+    paranoid: true,
+    deletedAt: 'timeDestroyed'
 });
+
+function myFunction () {
+    console.log("RUNNING SQL STATEMENT!");
+}
 
 User.sync({ alter: true })
     .then(() => {
@@ -213,16 +219,63 @@ User.sync({ alter: true })
         //     raw: true
         // })
         // return User.findOne();
-        return User.create({
-            username: "Hridoy",
-            password: "Hridoy",
-            age: 23
-        });
+        // return User.create({
+        //     username: "Hridoy",
+        //     password: "Hridoy",
+        //     age: 23
+        // });
         // return User.findOne({where: {username: "Hridoy"}})
         // const user = User.build({email: 'tom'});
         // return user.validate();
+        // return sequelize.query(`UPDATE user SET age = 22 WHERE username = "Yeasin"`);
+        // return sequelize.query(`SELECT * FROM user`, { type: sequelize.QueryTypes.SELECT });
+        // return sequelize.query(`UPDATE user SET age = 100 WHERE username = "Yeasin"`, {type: sequelize.QueryTypes.UPDATE});
+        // return sequelize.query(`SELECT * FROM user LIMIT 2`, {logging: myFunction});
+        // return sequelize.query(`SELECT * FROM user WHERE username LIKE :username`, {
+        //     replacements: { username: "Ye%" },
+        //     // plain: true
+        // })
+        // return User.bulkCreate([
+        //     {
+        //         username: "Mehedi",
+        //         password: "123",
+        //         description: "This  is long text part"
+        //     },
+        //     {
+        //         username: "Rakib",
+        //         password: "4567",
+        //         description: "This  is long text part"
+        //     },
+        //     {
+        //         username: "Hello",
+        //         password: "123456",
+        //         description: "This  is long text part"
+        //     }
+        // ])
+        // return User.destroy({
+        //     where: {
+        //         user_id: 3
+        //     },
+        //     // force: true
+        // })
+        // return User.restore({
+        //     where: {
+        //         user_id: 3
+        //     }
+        // })
+        // return User.destroy({
+        //     where: {
+        //         user_id: 1
+        //     }
+        // })
+        // return sequelize.query(`SELECT * FROM user LIMIT 1`);
+        return User.findOne({paranoid: false});
     })
     .then((data) => {
+        // [result, metadata] = data;
+        // console.log(result, "Result is here");
+        // console.log(metadata, "Meta data is here")
+        console.log(data, "User destroyed here!!!");
         // data.forEach(element => {
         //     console.log(element.toJSON());
         // });
@@ -234,8 +287,8 @@ User.sync({ alter: true })
         // console.log(data.username);
         // console.log(data.password);
         // console.log(data.description);
-        console.log(data.toJSON());
-        })
+        // console.log(data);
+    })
     .catch((err) => {
         console.log(err);
     });
